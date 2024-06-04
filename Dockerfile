@@ -5,43 +5,52 @@ LABEL description="Automated LFS build"
 LABEL version="8.2"
 LABEL maintainer="ilya.builuk@gmail.com"
 
+# Define build-time arguments with default values
 # LFS mount point
-ENV LFS=/mnt/lfs
+ARG LFS=/mnt/lfs
 
 # Other LFS parameters
-ENV LC_ALL=POSIX
-ENV LFS_TGT=x86_64-lfs-linux-gnu
-ENV PATH=/tools/bin:/bin:/usr/bin:/sbin:/usr/sbin
-ENV MAKEFLAGS="-j 1"
+ARG LC_ALL=POSIX
+ARG LFS_TGT=x86_64-lfs-linux-gnu
+ARG PATH=/tools/bin:/bin:/usr/bin:/sbin:/usr/sbin
 
 # Defines how toolchain is fetched
 # 0 use LFS wget file
 # 1 use binaries from toolchain folder
-# 2 use github release artifacts
-ENV FETCH_TOOLCHAIN_MODE=2
+# 2 use GitHub release artifacts
+ARG FETCH_TOOLCHAIN_MODE=2
 
-# set 1 to run tests; running tests takes much more time
-ENV LFS_TEST=0
+# Set 1 to run tests; running tests takes much more time
+ARG LFS_TEST=0
 
-# set 1 to install documentation; slightly increases final size
-ENV LFS_DOCS=0
+# Set 1 to install documentation; slightly increases final size
+ARG LFS_DOCS=0
 
-# degree of parallelism for compilation
-ENV JOB_COUNT=1
+# Degree of parallelism for compilation
+ARG JOB_COUNT=1
 
-# inital ram disk size in KB
-# must be in sync with CONFIG_BLK_DEV_RAM_SIZE
-ENV IMAGE_SIZE=900000
+# Initial RAM disk size in KB; must be in sync with CONFIG_BLK_DEV_RAM_SIZE
+ARG IMAGE_SIZE=900000
 
-# location of initrd tree
-ENV INITRD_TREE=/mnt/lfs
+# Location of initrd tree
+ARG INITRD_TREE
 
-# output image
-ENV IMAGE=isolinux/ramdisk.img
+# Output image
+ARG IMAGE=isolinux/ramdisk.img
 
-# set bash as default shell
-WORKDIR /bin
-RUN rm sh && ln -s bash sh
+# Set environment variables using ARG values
+ENV LFS=${LFS}
+ENV LC_ALL=${LC_ALL}
+ENV LFS_TGT=${LFS_TGT}
+ENV PATH=${PATH}
+ENV FETCH_TOOLCHAIN_MODE=${FETCH_TOOLCHAIN_MODE}
+ENV LFS_TEST=${LFS_TEST}
+ENV LFS_DOCS=${LFS_DOCS}
+ENV JOB_COUNT=${JOB_COUNT}
+ENV MAKEFLAGS="-j ${JOB_COUNT}" # Define MAKEFLAGS with parallelism
+ENV IMAGE_SIZE=${IMAGE_SIZE}
+ENV INITRD_TREE=${INITRD_TREE:-${LFS}}  # Default to LFS if INITRD_TREE is not provided
+ENV IMAGE=${IMAGE}
 
 # install required packages
 RUN apt-get update && apt-get install -y \
