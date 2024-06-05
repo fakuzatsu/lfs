@@ -122,7 +122,8 @@ USER lfs
 COPY [ "config/.bash_profile", "config/.bashrc", "/home/lfs/" ]
 
 # Ensure the bash profile is sourced correctly
-RUN echo "source ~/.bash_profile" >> /home/lfs/.bashrc
+RUN sudo chown lfs:lfs /home/lfs/.bashrc \
+ && echo "source ~/.bash_profile" | sudo -u lfs tee -a /home/lfs/.bashrc > /dev/null
 
 # Start the build process
 ENTRYPOINT [ "/tools/run-all.sh" ]
