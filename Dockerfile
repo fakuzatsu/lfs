@@ -1,5 +1,7 @@
 FROM debian:10-slim
 
+SHELL ["/bin/bash", "-c"]
+
 # image info
 LABEL description="Automated LFS build"
 LABEL version="8.2"
@@ -52,7 +54,7 @@ ENV IMAGE_SIZE=${IMAGE_SIZE}
 ENV INITRD_TREE=${INITRD_TREE:-${LFS}}  # Default to LFS if INITRD_TREE is not provided
 ENV IMAGE=${IMAGE}
 
-# install required packages
+# Install required packages
 RUN apt-get update && apt-get install -y \
     build-essential                      \
     bison                                \
@@ -66,21 +68,22 @@ RUN apt-get update && apt-get install -y \
     bc                                   \
     libssl-dev                           \
  && apt-get -q -y autoremove             \
+ && apt-get clean                        \
  && rm -rf /var/lib/apt/lists/*
 
-# create sources directory as writable and sticky
+# Create sources directory as writable and sticky
 RUN mkdir -pv     $LFS/sources \
  && chmod -v a+wt $LFS/sources
 WORKDIR $LFS/sources
 
-# create tools directory and symlink
+# Create tools directory and symlink
 RUN mkdir -pv $LFS/tools   \
  && ln    -sv $LFS/tools /
 
-# copy local binaries if present
+# Copy local binaries if present
 COPY ["toolchain/", "$LFS/sources/"]
 
-# copy scripts
+# Copy scripts
 COPY [ "scripts/run-all.sh",       \
        "scripts/library-check.sh", \
        "scripts/version-check.sh", \
@@ -88,33 +91,36 @@ COPY [ "scripts/run-all.sh",       \
        "scripts/build/",           \
        "scripts/image/",           \
        "$LFS/tools/" ]
-# copy configuration
+
+# Copy configuration
 COPY [ "config/kernel.config", "$LFS/tools/" ]
 
-# check environment
+# Check environment
 RUN chmod +x $LFS/tools/*.sh    \
  && sync                        \
  && $LFS/tools/version-check.sh \
  && $LFS/tools/library-check.sh
 
-# create lfs user with 'lfs' password
+# Create lfs user with 'lfs' password
 RUN groupadd lfs                                    \
  && useradd -s /bin/bash -g lfs -m -k /dev/null lfs \
- && echo "lfs:lfs" | chpasswd
-RUN adduser lfs sudo
+ && echo "lfs:lfs" | chpasswd \
+ && adduser lfs sudo
 
-# give lfs user ownership of directories
+# Give lfs user ownership of directories
 RUN chown -v lfs $LFS/tools  \
  && chown -v lfs $LFS/sources
 
-# avoid sudo password
-RUN echo "lfs ALL = NOPASSWD : ALL" >> /etc/sudoers
-RUN echo 'Defaults env_keep += "LFS LC_ALL LFS_TGT PATH MAKEFLAGS FETCH_TOOLCHAIN_MODE LFS_TEST LFS_DOCS JOB_COUNT LOOP IMAGE_SIZE INITRD_TREE IMAGE"' >> /etc/sudoers
+# Avoid sudo password
+RUN echo "lfs ALL = NOPASSWD : ALL" >> /etc/sudoers \
+ && echo 'Defaults env_keep += "LFS LC_ALL LFS_TGT PATH MAKEFLAGS FETCH_TOOLCHAIN_MODE LFS_TEST LFS_DOCS JOB_COUNT IMAGE_SIZE INITRD_TREE IMAGE"' >> /etc/sudoers
 
-# login as lfs user
+# Switch to lfs user and copy configuration files
 USER lfs
 COPY [ "config/.bash_profile", "config/.bashrc", "/home/lfs/" ]
-RUN source ~/.bash_profile
 
-# let's the party begin
+# Ensure the bash profile is sourced correctly
+RUN echo "source ~/.bash_profile" >> /home/lfs/.bashrc
+
+# Start the build process
 ENTRYPOINT [ "/tools/run-all.sh" ]
