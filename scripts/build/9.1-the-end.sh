@@ -9,7 +9,7 @@ echo 8.2 > /etc/lfs-release
 cat > /etc/lsb-release << "EOF"
 DISTRIB_ID="Linux From Scratch"
 DISTRIB_RELEASE="8.2"
-DISTRIB_CODENAME="reinterpretcat"
+DISTRIB_CODENAME="fakuzatsu"
 DISTRIB_DESCRIPTION="Linux From Scratch"
 EOF
 

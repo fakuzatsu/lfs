@@ -18,9 +18,10 @@ echo "Loop directory: $LOOP_DIR"
 dd if=/dev/zero of=$RAMDISK bs=1k count=$IMAGE_SIZE
 
 # plug off any virtual fs from loop device
-losetup -d $LOOP || true
+losetup -d $LOOP > /dev/null 2>&1 || true
 
 sync
+
 # associate it with ${LOOP}
 echo losetup $LOOP $RAMDISK
 losetup $LOOP $RAMDISK

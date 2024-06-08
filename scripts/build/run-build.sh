@@ -29,3 +29,6 @@ chroot "$LFS" /usr/bin/env -i                   \
 
 # cleanup
 sh /tools/9.x-cleanup.sh
+
+# image
+sh /tools/run-image.sh
