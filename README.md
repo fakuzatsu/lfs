@@ -24,11 +24,9 @@ it makes sense. Some deviations are done to make a bootable iso image.
 
 Use the following command:
 
-    docker rm lfs                                       && \
-    docker build --tag lfs:8.2 .                        && \
-    sudo docker run -it --privileged --name lfs lfs:8.2 && \
-    sudo docker cp lfs:/tmp/lfs.iso .
-    # Ramdisk you can find here: /tmp/ramdisk.img
+    docker rm lfs                  && \
+    docker build --tag lfs:8.2.1 . && \
+    sudo docker run -it --privileged --name lfs lfs:8.2.1
 
 Please note, that extended privileges are required by docker container
 in order to execute some commands (e.g. mount).

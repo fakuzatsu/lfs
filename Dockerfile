@@ -168,6 +168,8 @@ RUN chown -R root:root $LFS/tools && sync
 # Let the party begin
 ENTRYPOINT [ "/tools/run-build.sh" ]
 
-# After the build completes, search and copy the ISO file
+# Search for both the ISO and ramdisk.img files and copy them to mnt
 RUN ISO_PATH=$(find / -name "*.iso" 2>/dev/null | head -n 1) && \
-    if [ -n "$ISO_PATH" ]; then cp "$ISO_PATH" ${LFS}/lfs.iso; else echo "ISO not found!"; exit 1; fi
+    RAMDISK_PATH=$(find / -name "ramdisk.img" 2>/dev/null | head -n 1) && \
+    if [ -n "$ISO_PATH" ]; then cp "$ISO_PATH" ${LFS}/lfs.iso; else echo "ISO not found!"; exit 1; fi && \
+    if [ -n "$RAMDISK_PATH" ]; then cp "$RAMDISK_PATH" ${LFS}/ramdisk.img; else echo "Ramdisk not found!"; exit 1; fi
