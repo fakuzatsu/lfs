@@ -4,8 +4,8 @@ SHELL ["/bin/bash", "-c"]
 
 # image info
 LABEL description="Automated LFS build"
-LABEL version="8.2"
-LABEL maintainer="ilya.builuk@gmail.com"
+LABEL version="8.2.1"
+LABEL maintainer="fakuzatsu@gmail.com"
 
 # Define build-time arguments with default values
 # LFS mount point
@@ -167,3 +167,7 @@ RUN chown -R root:root $LFS/tools && sync
 
 # Let the party begin
 ENTRYPOINT [ "/tools/run-build.sh" ]
+
+# After the build completes, search and copy the ISO file
+RUN ISO_PATH=$(find / -name "*.iso" 2>/dev/null | head -n 1) && \
+    if [ -n "$ISO_PATH" ]; then cp "$ISO_PATH" ${LFS}/lfs.iso; else echo "ISO not found!"; exit 1; fi
